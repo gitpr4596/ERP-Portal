@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Evaluation - Evaluate Reports</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a192f 0%, #112240 100%);
+            color: #ccd6f6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(17, 34, 64, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #64ffda;
+        }
+
+        .header h1 {
+            color: #64ffda;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #8892b0;
+            font-size: 1.1em;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(100, 255, 218, 0.1);
+            border: 2px solid #64ffda;
+            color: #64ffda;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-button:hover {
+            background: rgba(100, 255, 218, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .reports-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(35, 53, 84, 0.6);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .reports-table th,
+        .reports-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #233554;
+        }
+
+        .reports-table th {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            font-weight: 600;
+        }
+
+        .reports-table tr:hover {
+            background: rgba(100, 255, 218, 0.05);
+        }
+
+        .view-button {
+            background: linear-gradient(45deg, #64ffda, #00d4ff);
+            color: #0a192f;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(100, 255, 218, 0.3);
+        }
+
+        .edit-button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .edit-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-draft { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .status-submitted { background: rgba(0, 123, 255, 0.2); color: #007bff; }
+        .status-completed { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+
+        .loading {
+            text-align: center;
+            color: #8892b0;
+            font-size: 1.1em;
+            margin: 50px 0;
+        }
+
+        .no-reports {
+            text-align: center;
+            color: #8892b0;
+            font-size: 1.1em;
+            margin: 50px 0;
+            padding: 40px;
+            background: rgba(35, 53, 84, 0.3);
+            border-radius: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: rgba(17, 34, 64, 0.95);
+            margin: 2% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #64ffda;
+        }
+
+        .modal-header h2 {
+            color: #64ffda;
+            font-size: 1.8em;
+        }
+
+        .close {
+            color: #8892b0;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #64ffda;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(35, 53, 84, 0.4);
+            border-radius: 8px;
+            border-left: 4px solid #64ffda;
+        }
+
+        .form-section h3 {
+            color: #64ffda;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccd6f6;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #233554;
+            border-radius: 6px;
+            background: rgba(17, 34, 64, 0.8);
+            color: #ccd6f6;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #64ffda;
+            box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.2);
+        }
+
+        .evaluation-item {
+            display: grid;
+            grid-template-columns: 1fr 100px 1fr;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(17, 34, 64, 0.3);
+            border-radius: 6px;
+        }
+
+        .evaluation-item label {
+            color: #ccd6f6;
+            font-weight: 500;
+        }
+
+        .score-input {
+            width: 80px;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #233554;
+            border-radius: 4px;
+            background: rgba(17, 34, 64, 0.8);
+            color: #ccd6f6;
+        }
+
+        .score-input:invalid {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+        }
+
+        .comments-input {
+            padding: 8px;
+            border: 1px solid #233554;
+            border-radius: 4px;
+            background: rgba(17, 34, 64, 0.8);
+            color: #ccd6f6;
+            resize: vertical;
+            min-height: 40px;
+        }
+
+        .submit-button {
+            background: linear-gradient(45deg, #64ffda, #00d4ff);
+            color: #0a192f;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(100, 255, 218, 0.4);
+        }
+
+        .signature-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #233554;
+        }
+
+        .error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: #64ffda;
+            background: rgba(100, 255, 218, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+
+        .evaluation-display {
+            background: rgba(17, 34, 64, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .evaluation-display .evaluation-item {
+            display: grid;
+            grid-template-columns: 1fr 80px 1fr;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(17, 34, 64, 0.2);
+            border-radius: 6px;
+        }
+
+        .score-display {
+            background: rgba(100, 255, 218, 0.2);
+            color: #64ffda;
+            padding: 8px 12px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .comments-display {
+            background: rgba(17, 34, 64, 0.5);
+            padding: 8px;
+            border-radius: 4px;
+            color: #ccd6f6;
+            font-size: 13px;
+            min-height: 40px;
+            border-left: 3px solid #64ffda;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .evaluation-item {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .signature-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/multi_dashboard" class="back-button">
+        ← Back to Dashboard
+    </a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📋 Evaluate Reports</h1>
+            <p>Review and evaluate employee reports</p>
+        </div>
+
+        <div class="loading" id="loadingMessage">
+            Loading evaluation reports...
+        </div>
+
+        <div id="reportsContainer" style="display: none;">
+            <table class="reports-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="no-reports" id="noReportsMessage" style="display: none;">
+            <h3>No evaluation reports available</h3>
+            <p>There are currently no reports assigned to you for evaluation.</p>
+        </div>
+    </div>
+
+    <!-- Evaluation Modal -->
+    <div id="evaluationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Evaluation Report</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalBody">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const userId = {{ user_id }};
+        let currentReportId = null;
+
+        // Check for report_id parameter in URL and auto-load that report
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const reportId = urlParams.get('report_id');
+            
+            if (reportId) {
+                // Auto-load the specific report
+                viewReport(parseInt(reportId));
+            } else {
+                // Load all reports normally
+                loadReports();
+            }
+        });
+
+        async function loadReports() {
+            try {
+                const response = await fetch(`/api/evaluation/reports?t=${Date.now()}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayReports(data.reports);
+                } else {
+                    showMessage('Error loading reports: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error loading reports: ' + error.message, 'error');
+            }
+        }
+
+        function displayReports(reports) {
+            const loadingMessage = document.getElementById('loadingMessage');
+            const reportsContainer = document.getElementById('reportsContainer');
+            const noReportsMessage = document.getElementById('noReportsMessage');
+            const tableBody = document.getElementById('reportsTableBody');
+            
+            loadingMessage.style.display = 'none';
+            
+            if (reports.length === 0) {
+                noReportsMessage.style.display = 'block';
+                return;
+            }
+            
+            reportsContainer.style.display = 'block';
+            tableBody.innerHTML = '';
+            
+            reports.forEach(report => {
+                const row = document.createElement('tr');
+                // Determine button text and class based on status and user role
+                let isEditable = false;
+                
+                // Get current user roles from the report data
+                const userRoles = report.user_roles || [];
+                const userId = report.current_user_id;
+                
+                // Check if current user can edit this report based on their role and report status
+                if (report.status === 'Employee has Submitted' && 
+                    userRoles.includes('Team Lead') && report.team_lead_id === userId) {
+                    // Team Lead can edit when status is "Employee has Submitted"
+                    isEditable = true;
+                } else if (report.status === 'Team Lead has Reviewed' && 
+                          userRoles.includes('HR')) {
+                    // HR can edit when status is "Team Lead has Reviewed"
+                    isEditable = true;
+                } else if (report.status === 'HR has Reviewed' && 
+                          userRoles.includes('Director')) {
+                    // Director can edit when status is "HR has Reviewed"
+                    isEditable = true;
+                } else if (report.status === 'Director has Reviewed' && 
+                          userRoles.some(role => ['Managing Director', 'managing director', 'MD', 'md', 'Managing director'].includes(role))) {
+                    // Managing Director can edit when status is "Director has Reviewed"
+                    isEditable = true;
+                }
+                
+                const buttonText = isEditable ? 'Edit' : 'View';
+                const buttonClass = isEditable ? 'edit-button' : 'view-button';
+                
+                row.innerHTML = `
+                    <td>${report.created_at}</td>
+                    <td>${report.employee_name}</td>
+                    <td>${report.position}</td>
+                    <td><span class="status-badge status-${report.status.toLowerCase().replace(' ', '-')}">${report.status}</span></td>
+                    <td><button class="${buttonClass}" onclick="viewReport(${report.id})">${buttonText}</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function viewReport(reportId) {
+            console.log('viewReport called with reportId:', reportId);
+            currentReportId = reportId;
+            try {
+                // Force fresh data by adding timestamp and no-cache headers
+                const response = await fetch(`/api/evaluation/report/${reportId}?t=${Date.now()}&v=${Math.random()}&r=${Math.random()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0',
+                        'If-Modified-Since': '0',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Debug: Log the data being received
+                    console.log('Report data received:', data.report);
+                    if (data.report.evaluations && data.report.evaluations['3']) {
+                        console.log('Team Lead evaluation data loaded successfully:', data.report.evaluations['3']);
+                    } else {
+                        console.log('No Team Lead evaluation data found. Available evaluations:', Object.keys(data.report.evaluations || {}));
+                    }
+                    if (data.report.evaluations && data.report.evaluations['5']) {
+                        console.log('Director evaluation data loaded successfully');
+                    }
+                    if (data.report.evaluations && data.report.evaluations['6']) {
+                        console.log('MD evaluation data:', data.report.evaluations['6']);
+                    }
+                    showEvaluationModal(data.report);
+                } else {
+                    showMessage('Error loading report: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error loading report: ' + error.message, 'error');
+            }
+        }
+
+        function refreshReport() {
+            if (currentReportId) {
+                // Force complete page reload to clear all caches
+                window.location.reload(true);
+            }
+        }
+
+        function showEvaluationModal(report) {
+            const modal = document.getElementById('evaluationModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            // Add refresh button
+            modalTitle.innerHTML = `
+                <h2>Evaluation Report - ${report.name}</h2>
+                <button onclick="refreshReport()" style="background: #64ffda; color: #0a192f; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
+                    🔄 Refresh
+                </button>
+            `;
+            
+            // Determine user role and what form to show
+            const userRoles = report.user_roles || [];
+            let currentUserRole = '';
+            let pageNumber = 0;
+            let formTitle = '';
+            let submitButtonText = '';
+            
+            console.log('Role determination debug:', {
+                userRoles: userRoles,
+                userRolesExpanded: userRoles.map(role => `"${role}"`),
+                reportStatus: report.status,
+                userId: userId
+            });
+            
+            // Check roles in order of priority (highest authority first)
+            // Check roles in flow order (Team Lead → HR → Director → Managing Director)
+            // Priority: Show form for the earliest role in the flow that has access
+            
+            // First priority: Team Lead
+            console.log('Team Lead role check:', {
+                userRoles: userRoles,
+                hasTeamLeadRole: userRoles.includes('Team Lead'),
+                reportTeamLeadId: report.team_lead_id,
+                currentUserId: userId,
+                isAssignedTeamLead: report.team_lead_id === userId,
+                reportStatus: report.status
+            });
+            
+            if (userRoles.includes('Team Lead') && report.team_lead_id === userId) {
+                if (report.status === 'Employee has Submitted') {
+                    currentUserRole = 'Team Lead';
+                    pageNumber = 3;
+                    formTitle = '📝 Team Lead Evaluation';
+                    submitButtonText = 'Submit Team Lead Evaluation';
+                    console.log('Set Team Lead role for new evaluation');
+                } else if (report.status === 'Team Lead has Reviewed' || report.status === 'HR has Reviewed' || report.status === 'Director has Reviewed' || report.status === 'Completed') {
+                    // Team Lead viewing their own submitted evaluation
+                    currentUserRole = 'Team Lead';
+                    pageNumber = 3;
+                    formTitle = '📝 Team Lead Evaluation (Your Submission)';
+                    submitButtonText = 'View Only';
+                    console.log('Set Team Lead role for submitted evaluation');
+                }
+            }
+            // Second priority: HR
+            else if (userRoles.includes('HR') && (report.status === 'Team Lead has Reviewed' || report.status === 'HR has Reviewed')) {
+                currentUserRole = 'HR';
+                pageNumber = 4;
+                formTitle = '📝 HR Evaluation';
+                submitButtonText = 'Submit HR Evaluation';
+            }
+            // Third priority: Director
+            else if (userRoles.includes('Director') && (report.status === 'HR has Reviewed' || report.status === 'Completed' || report.status === 'Director has Reviewed')) {
+                currentUserRole = 'Director';
+                pageNumber = 5;
+                formTitle = '📝 Director Evaluation';
+                submitButtonText = 'Submit Director Evaluation';
+            }
+            // Fourth priority: Managing Director
+            console.log('Checking Managing Director role assignment:', {
+                userRoles: userRoles,
+                reportStatus: report.status,
+                isMD: userRoles.some(role => ['Managing Director', 'managing director', 'MD', 'md', 'Managing director'].includes(role)),
+                statusMatch: (report.status === 'Director has Reviewed' || report.status === 'Completed')
+            });
+            
+            if (userRoles.some(role => ['Managing Director', 'managing director', 'MD', 'md', 'Managing director'].includes(role)) && (report.status === 'Director has Reviewed' || report.status === 'Completed')) {
+                currentUserRole = 'Managing Director';
+                pageNumber = 6;
+                formTitle = '📝 Managing Director Evaluation';
+                submitButtonText = 'Submit MD Evaluation';
+                console.log('Set Managing Director role for evaluation');
+            }
+            // Employee viewing their own report - show read-only view of their self evaluation
+            else if (userRoles.includes('Employee')) {
+                currentUserRole = 'Employee';
+                pageNumber = 2;
+                formTitle = '📝 Self Evaluation (Your Submission)';
+                submitButtonText = 'View Only';
+            }
+            
+            let modalContent = `
+                <div class="form-section">
+                    <h3>📋 Employee Basic Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Name:</label>
+                            <input type="text" value="${report.name}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Position:</label>
+                            <input type="text" value="${report.position}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contact Number:</label>
+                            <input type="text" value="${report.contact_number}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Email ID:</label>
+                            <input type="text" value="${report.email_id}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Office Branch:</label>
+                            <input type="text" value="${report.office_branch}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Employee ID:</label>
+                            <input type="text" value="${report.employee_id_str}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Status:</label>
+                            <input type="text" value="${report.employment_status}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Status Duration/Date:</label>
+                            <input type="text" value="${report.status_duration}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Salary:</label>
+                            <input type="text" value="${report.salary}" readonly>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Show previous evaluations
+            if (report.evaluations) {
+                console.log('Evaluations available:', Object.keys(report.evaluations));
+                console.log('Current user role:', currentUserRole);
+                
+                // Page 2: Self Evaluation (Employee) - show to HR, Director, MD, and Employee viewing their own report (NOT Team Lead)
+                console.log('Checking Self Evaluation display:', {
+                    hasEvaluation2: !!report.evaluations['2'],
+                    currentUserRole: currentUserRole,
+                    shouldShow: (currentUserRole === 'HR' || currentUserRole === 'Director' || currentUserRole === 'Managing Director' || currentUserRole === 'Employee')
+                });
+                
+                if (report.evaluations['2'] && 
+                    (currentUserRole === 'HR' || currentUserRole === 'Director' || currentUserRole === 'Managing Director' || currentUserRole === 'Employee')) {
+                    const eval2 = report.evaluations['2'];
+                    modalContent += `
+                        <div class="form-section">
+                            <h3>📝 Self Evaluation (Employee)</h3>
+                            <p style="color: #8892b0; margin-bottom: 15px;">Evaluated by: ${eval2.evaluator_name} on ${eval2.evaluation_date}</p>
+                            <div class="evaluation-display">
+                                <div class="evaluation-item">
+                                    <label>Attendance</label>
+                                    <span class="score-display">${eval2.attendance_score}/10</span>
+                                    <div class="comments-display">${eval2.attendance_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Discipline</label>
+                                    <span class="score-display">${eval2.discipline_score}/10</span>
+                                    <div class="comments-display">${eval2.discipline_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Knowledge & Skills</label>
+                                    <span class="score-display">${eval2.knowledge_skills_score}/10</span>
+                                    <div class="comments-display">${eval2.knowledge_skills_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Quality of Work</label>
+                                    <span class="score-display">${eval2.quality_work_score}/10</span>
+                                    <div class="comments-display">${eval2.quality_work_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Team Work</label>
+                                    <span class="score-display">${eval2.teamwork_score}/10</span>
+                                    <div class="comments-display">${eval2.teamwork_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Work Consistency</label>
+                                    <span class="score-display">${eval2.work_consistency_score}/10</span>
+                                    <div class="comments-display">${eval2.work_consistency_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Thinking Process</label>
+                                    <span class="score-display">${eval2.thinking_process_score}/10</span>
+                                    <div class="comments-display">${eval2.thinking_process_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Communication</label>
+                                    <span class="score-display">${eval2.communication_score}/10</span>
+                                    <div class="comments-display">${eval2.communication_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Initiative</label>
+                                    <span class="score-display">${eval2.initiative_score}/10</span>
+                                    <div class="comments-display">${eval2.initiative_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Motivation</label>
+                                    <span class="score-display">${eval2.motivation_score}/10</span>
+                                    <div class="comments-display">${eval2.motivation_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Creativity</label>
+                                    <span class="score-display">${eval2.creativity_score}/10</span>
+                                    <div class="comments-display">${eval2.creativity_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Honesty</label>
+                                    <span class="score-display">${eval2.honesty_score}/10</span>
+                                    <div class="comments-display">${eval2.honesty_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Overall Rating</label>
+                                    <span class="score-display">${eval2.overall_rating_score}/10</span>
+                                    <div class="comments-display">${eval2.overall_rating_comments || 'No comments'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Page 3: Team Lead Evaluation (show to HR, Director, MD only - not to Team Lead who submitted it)
+                console.log('Checking Team Lead evaluation display:', {
+                    hasEvaluation3: !!report.evaluations['3'],
+                    currentUserRole: currentUserRole,
+                    evaluations: report.evaluations,
+                    reportStatus: report.status,
+                    shouldShow: (currentUserRole === 'HR' || currentUserRole === 'Director' || currentUserRole === 'Managing Director')
+                });
+                
+                if (report.evaluations['3'] && 
+                    (currentUserRole === 'HR' || currentUserRole === 'Director' || currentUserRole === 'Managing Director')) {
+                    const eval3 = report.evaluations['3'];
+                    modalContent += `
+                        <div class="form-section">
+                            <h3>📝 Team Lead Evaluation</h3>
+                            <p style="color: #8892b0; margin-bottom: 15px;">
+                                ${currentUserRole === 'Team Lead' ? 
+                                    'This is your submitted Team Lead evaluation.' : 
+                                    `Evaluated by: ${eval3.evaluator_name} on ${eval3.evaluation_date}`}
+                            </p>
+                            <div class="evaluation-display">
+                                <div class="evaluation-item">
+                                    <label>Attendance</label>
+                                    <span class="score-display">${eval3.attendance_score}/10</span>
+                                    <div class="comments-display">${eval3.attendance_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Discipline</label>
+                                    <span class="score-display">${eval3.discipline_score}/10</span>
+                                    <div class="comments-display">${eval3.discipline_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Knowledge & Skills</label>
+                                    <span class="score-display">${eval3.knowledge_skills_score}/10</span>
+                                    <div class="comments-display">${eval3.knowledge_skills_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Quality of Work</label>
+                                    <span class="score-display">${eval3.quality_work_score}/10</span>
+                                    <div class="comments-display">${eval3.quality_work_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Team Work</label>
+                                    <span class="score-display">${eval3.teamwork_score}/10</span>
+                                    <div class="comments-display">${eval3.teamwork_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Work Consistency</label>
+                                    <span class="score-display">${eval3.work_consistency_score}/10</span>
+                                    <div class="comments-display">${eval3.work_consistency_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Thinking Process</label>
+                                    <span class="score-display">${eval3.thinking_process_score}/10</span>
+                                    <div class="comments-display">${eval3.thinking_process_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Communication</label>
+                                    <span class="score-display">${eval3.communication_score}/10</span>
+                                    <div class="comments-display">${eval3.communication_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Initiative</label>
+                                    <span class="score-display">${eval3.initiative_score}/10</span>
+                                    <div class="comments-display">${eval3.initiative_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Motivation</label>
+                                    <span class="score-display">${eval3.motivation_score}/10</span>
+                                    <div class="comments-display">${eval3.motivation_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Creativity</label>
+                                    <span class="score-display">${eval3.creativity_score}/10</span>
+                                    <div class="comments-display">${eval3.creativity_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Honesty</label>
+                                    <span class="score-display">${eval3.honesty_score}/10</span>
+                                    <div class="comments-display">${eval3.honesty_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Overall Rating</label>
+                                    <span class="score-display">${eval3.overall_rating_score}/10</span>
+                                    <div class="comments-display">${eval3.overall_rating_comments || 'No comments'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Page 4: HR Evaluation (show to Director, MD only - not to HR who submitted it)
+                console.log('Checking HR evaluation display:', {
+                    hasEvaluation4: !!report.evaluations['4'],
+                    currentUserRole: currentUserRole,
+                    evaluatorName: report.evaluations['4']?.evaluator_name,
+                    shouldShow: (currentUserRole === 'Director' || currentUserRole === 'Managing Director')
+                });
+                
+                if (report.evaluations['4'] && 
+                    (currentUserRole === 'Director' || currentUserRole === 'Managing Director')) {
+                    const eval4 = report.evaluations['4'];
+                    modalContent += `
+                        <div class="form-section">
+                            <h3>📝 HR Evaluation</h3>
+                            <p style="color: #8892b0; margin-bottom: 15px;">Evaluated by: ${eval4.evaluator_name} on ${eval4.evaluation_date}</p>
+                            <div class="evaluation-display">
+                                <div class="evaluation-item">
+                                    <label>Attendance</label>
+                                    <span class="score-display">${eval4.attendance_score}/10</span>
+                                    <div class="comments-display">${eval4.attendance_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Discipline</label>
+                                    <span class="score-display">${eval4.discipline_score}/10</span>
+                                    <div class="comments-display">${eval4.discipline_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Commitment Towards Work</label>
+                                    <span class="score-display">${eval4.commitment_work_score}/10</span>
+                                    <div class="comments-display">${eval4.commitment_work_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Work Attitude</label>
+                                    <span class="score-display">${eval4.work_attitude_score}/10</span>
+                                    <div class="comments-display">${eval4.work_attitude_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Team Orientation Skills</label>
+                                    <span class="score-display">${eval4.team_orientation_score}/10</span>
+                                    <div class="comments-display">${eval4.team_orientation_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Integrity and Honesty</label>
+                                    <span class="score-display">${eval4.integrity_honesty_score}/10</span>
+                                    <div class="comments-display">${eval4.integrity_honesty_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Communication</label>
+                                    <span class="score-display">${eval4.communication_score}/10</span>
+                                    <div class="comments-display">${eval4.communication_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Productivity</label>
+                                    <span class="score-display">${eval4.productivity_score}/10</span>
+                                    <div class="comments-display">${eval4.productivity_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Initiative</label>
+                                    <span class="score-display">${eval4.initiative_score}/10</span>
+                                    <div class="comments-display">${eval4.initiative_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Punctuality</label>
+                                    <span class="score-display">${eval4.punctuality_score}/10</span>
+                                    <div class="comments-display">${eval4.punctuality_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Physical Disposition</label>
+                                    <span class="score-display">${eval4.physical_disposition_score}/10</span>
+                                    <div class="comments-display">${eval4.physical_disposition_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Overall</label>
+                                    <span class="score-display">${eval4.overall_hr_score}/10</span>
+                                    <div class="comments-display">${eval4.overall_hr_comments || 'No comments'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Page 5: Director Evaluation (show to MD only - not to Director who submitted it)
+                if (report.evaluations['5'] && 
+                    currentUserRole === 'Managing Director') {
+                    const eval5 = report.evaluations['5'];
+                    modalContent += `
+                        <div class="form-section">
+                            <h3>📝 Director Evaluation</h3>
+                            <p style="color: #8892b0; margin-bottom: 15px;">Evaluated by: ${eval5.evaluator_name} on ${eval5.evaluation_date}</p>
+                            <div class="evaluation-display">
+                                <div class="evaluation-item">
+                                    <label>Knowledge & Skills</label>
+                                    <span class="score-display">${eval5.knowledge_skills_score}/10</span>
+                                    <div class="comments-display">${eval5.knowledge_skills_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Quality of Work</label>
+                                    <span class="score-display">${eval5.quality_work_score}/10</span>
+                                    <div class="comments-display">${eval5.quality_work_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Team Work</label>
+                                    <span class="score-display">${eval5.teamwork_score}/10</span>
+                                    <div class="comments-display">${eval5.teamwork_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Work Consistency</label>
+                                    <span class="score-display">${eval5.work_consistency_score}/10</span>
+                                    <div class="comments-display">${eval5.work_consistency_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Commitment towards work</label>
+                                    <span class="score-display">${eval5.commitment_work_score || 'null'}/10</span>
+                                    <div class="comments-display">${eval5.commitment_work_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Creativity</label>
+                                    <span class="score-display">${eval5.creativity_score}/10</span>
+                                    <div class="comments-display">${eval5.creativity_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Discipline</label>
+                                    <span class="score-display">${eval5.discipline_score}/10</span>
+                                    <div class="comments-display">${eval5.discipline_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Communication</label>
+                                    <span class="score-display">${eval5.communication_score}/10</span>
+                                    <div class="comments-display">${eval5.communication_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Stability</label>
+                                    <span class="score-display">${eval5.stability_score}/10</span>
+                                    <div class="comments-display">${eval5.stability_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Physical Disposition</label>
+                                    <span class="score-display">${eval5.physical_disposition_score || 'null'}/10</span>
+                                    <div class="comments-display">${eval5.physical_disposition_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Productivity</label>
+                                    <span class="score-display">${eval5.productivity_score || 'null'}/10</span>
+                                    <div class="comments-display">${eval5.productivity_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Punctuality</label>
+                                    <span class="score-display">${eval5.punctuality_score || 'null'}/10</span>
+                                    <div class="comments-display">${eval5.punctuality_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Overall</label>
+                                    <span class="score-display">${eval5.overall_rating_score}/10</span>
+                                    <div class="comments-display">${eval5.overall_rating_comments || 'No comments'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Page 6: Managing Director Evaluation (show to Director only - not to MD who submitted it)
+                console.log('Checking Managing Director evaluation display:', {
+                    hasEvaluation6: !!report.evaluations['6'],
+                    currentUserRole: currentUserRole,
+                    evaluatorName: report.evaluations['6']?.evaluator_name,
+                    shouldShow: (currentUserRole === 'Director')
+                });
+                
+                if (report.evaluations['6'] && 
+                    currentUserRole === 'Director') {
+                    const eval6 = report.evaluations['6'];
+                    modalContent += `
+                        <div class="form-section">
+                            <h3>📝 Managing Director Evaluation</h3>
+                            <p style="color: #8892b0; margin-bottom: 15px;">Evaluated by: ${eval6.evaluator_name} on ${eval6.evaluation_date}</p>
+                            <div class="evaluation-display">
+                                <div class="evaluation-item">
+                                    <label>Knowledge & Skills</label>
+                                    <span class="score-display">${eval6.knowledge_skills_score}/10</span>
+                                    <div class="comments-display">${eval6.knowledge_skills_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Quality of Work</label>
+                                    <span class="score-display">${eval6.quality_work_score}/10</span>
+                                    <div class="comments-display">${eval6.quality_work_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Team Work</label>
+                                    <span class="score-display">${eval6.teamwork_score}/10</span>
+                                    <div class="comments-display">${eval6.teamwork_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Work Consistency</label>
+                                    <span class="score-display">${eval6.work_consistency_score}/10</span>
+                                    <div class="comments-display">${eval6.work_consistency_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Commitment towards work</label>
+                                    <span class="score-display">${eval6.commitment_work_score}/10</span>
+                                    <div class="comments-display">${eval6.commitment_work_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Creativity</label>
+                                    <span class="score-display">${eval6.creativity_score}/10</span>
+                                    <div class="comments-display">${eval6.creativity_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Discipline</label>
+                                    <span class="score-display">${eval6.discipline_score}/10</span>
+                                    <div class="comments-display">${eval6.discipline_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Communication</label>
+                                    <span class="score-display">${eval6.communication_score}/10</span>
+                                    <div class="comments-display">${eval6.communication_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Stability</label>
+                                    <span class="score-display">${eval6.stability_score}/10</span>
+                                    <div class="comments-display">${eval6.stability_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Physical Disposition</label>
+                                    <span class="score-display">${eval6.physical_disposition_score}/10</span>
+                                    <div class="comments-display">${eval6.physical_disposition_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Productivity</label>
+                                    <span class="score-display">${eval6.productivity_score}/10</span>
+                                    <div class="comments-display">${eval6.productivity_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Punctuality</label>
+                                    <span class="score-display">${eval6.punctuality_score}/10</span>
+                                    <div class="comments-display">${eval6.punctuality_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Overall</label>
+                                    <span class="score-display">${eval6.overall_rating_score}/10</span>
+                                    <div class="comments-display">${eval6.overall_rating_comments || 'No comments'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Further Action</label>
+                                    <div class="comments-display">
+                                        ${eval6.further_action_hold ? 'Hold' : ''} 
+                                        ${eval6.further_action_next_round ? 'Next Round' : ''}
+                                    </div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Suitable/Not Suitable</label>
+                                    <div class="comments-display">
+                                        ${eval6.suitable_yes ? 'Suitable' : ''} 
+                                        ${eval6.suitable_no ? 'Not Suitable' : ''}
+                                    </div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Project</label>
+                                    <div class="comments-display">${eval6.project_assignment || 'No project specified'}</div>
+                                </div>
+                                <div class="evaluation-item">
+                                    <label>Area</label>
+                                    <div class="comments-display">${eval6.area_assignment || 'No area specified'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+                // Show current user's evaluation form (only if they haven't submitted yet)
+                if (currentUserRole) {
+                    console.log('Current user role detected:', currentUserRole, 'Page number:', pageNumber);
+                    // Check if current user has already submitted their evaluation
+                    const currentUserEvaluation = report.evaluations[pageNumber.toString()];
+                    const hasAlreadySubmitted = currentUserEvaluation && currentUserEvaluation.evaluator_name;
+                    console.log('Has already submitted:', hasAlreadySubmitted, 'Current user evaluation:', currentUserEvaluation);
+                
+                // For employees and submitted evaluations, show read-only view
+                if (currentUserRole === 'Employee' || hasAlreadySubmitted) {
+                    // Show read-only view of their submitted evaluation
+                    let submissionMessage = '';
+                    if (currentUserRole === 'Employee') {
+                        submissionMessage = 'This is your submitted self-evaluation.';
+                    } else if (currentUserRole === 'Team Lead') {
+                        submissionMessage = 'This is your submitted Team Lead evaluation.';
+                    } else if (currentUserRole === 'HR') {
+                        submissionMessage = 'This is your submitted HR evaluation.';
+                    } else if (currentUserRole === 'Director') {
+                        submissionMessage = 'This is your submitted Director evaluation.';
+                    } else if (currentUserRole === 'Managing Director') {
+                        submissionMessage = 'This is your submitted Managing Director evaluation.';
+                    } else {
+                        submissionMessage = `You have already submitted this evaluation on ${currentUserEvaluation.evaluation_date}`;
+                    }
+                    
+                    modalContent += `
+                        <div class="form-section">
+                            <h3>${formTitle}</h3>
+                            <p style="color: #8892b0; margin-bottom: 15px;">${submissionMessage}</p>
+                            <div class="evaluation-display">
+                                ${generateReadOnlyEvaluation(currentUserRole, currentUserEvaluation)}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Show editable form
+                    console.log('Generating editable form for role:', currentUserRole, 'Page:', pageNumber);
+                    modalContent += `
+                        <div class="form-section">
+                            <h3>${formTitle}</h3>
+                            <p style="color: #8892b0; margin-bottom: 20px;">Rate the employee on a scale of 1-10 for each criterion and provide additional comments.</p>
+                            
+                            <form id="currentEvaluationForm">
+                                ${generateEvaluationForm(currentUserRole)}
+                                
+                                <div class="signature-section">
+                                <div class="form-group">
+                                    <label for="signature">Signature:</label>
+                                    <textarea id="signature" name="signature" rows="3" placeholder="Your signature or initials" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="evaluator_name">Name:</label>
+                                    <input type="text" id="evaluator_name" name="evaluator_name" placeholder="Your full name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="evaluation_date">Date:</label>
+                                    <input type="date" id="evaluation_date" name="evaluation_date" required>
+                                </div>
+                            </div>
+
+                            <div style="text-align: center;">
+                                <button type="submit" class="submit-button">${submitButtonText}</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+                }
+            }
+            
+            try {
+                modalBody.innerHTML = modalContent;
+                modal.style.display = 'block';
+                
+                // Set today's date as default (only if the field exists)
+                safeSetValue('evaluation_date', new Date().toISOString().split('T')[0]);
+                
+                // Add form submit handler (only if form exists)
+                if (currentUserRole) {
+                    const evaluationForm = document.getElementById('currentEvaluationForm');
+                    if (evaluationForm) {
+                        evaluationForm.addEventListener('submit', function(e) {
+                            submitEvaluation(e, currentUserRole, pageNumber);
+                        });
+                        
+                        // Add event listeners for score fields and auto-calculation
+                        addScoreFieldListeners();
+                    }
+                }
+            } catch (error) {
+                console.error('Error opening modal:', error);
+                showMessage('Error loading report: ' + error.message, 'error');
+            }
+        }
+        
+        function generateEvaluationForm(role) {
+            console.log('generateEvaluationForm called with role:', role);
+            if (role === 'Team Lead') {
+                console.log('Generating Team Lead form');
+                return generateTeamLeadForm();
+            } else if (role === 'HR') {
+                console.log('Generating HR form');
+                return generateHRForm();
+            } else if (role === 'Director') {
+                console.log('Generating Director form');
+                return generateDirectorForm();
+            } else if (role === 'Managing Director') {
+                console.log('Generating MD form');
+                return generateMDForm();
+            }
+            console.log('No form generated for role:', role);
+            return '';
+        }
+        
+        function generateTeamLeadForm() {
+            return `
+                <div class="evaluation-item">
+                    <label>Attendance</label>
+                    <input type="number" class="score-input" name="attendance_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="attendance_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Discipline</label>
+                    <input type="number" class="score-input" name="discipline_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="discipline_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Knowledge & Skills</label>
+                    <input type="number" class="score-input" name="knowledge_skills_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="knowledge_skills_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Quality of Work</label>
+                    <input type="number" class="score-input" name="quality_work_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="quality_work_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Team Work</label>
+                    <input type="number" class="score-input" name="teamwork_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="teamwork_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Work Consistency</label>
+                    <input type="number" class="score-input" name="work_consistency_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="work_consistency_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Thinking Process</label>
+                    <input type="number" class="score-input" name="thinking_process_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="thinking_process_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Communication</label>
+                    <input type="number" class="score-input" name="communication_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="communication_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Initiative</label>
+                    <input type="number" class="score-input" name="initiative_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="initiative_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Motivation</label>
+                    <input type="number" class="score-input" name="motivation_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="motivation_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Creativity</label>
+                    <input type="number" class="score-input" name="creativity_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="creativity_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Honesty</label>
+                    <input type="number" class="score-input" name="honesty_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="honesty_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Overall Rating (Auto-calculated)</label>
+                    <input type="number" class="score-input" name="overall_rating_score" min="1" max="10" readonly style="background: rgba(17, 34, 64, 0.5); color: #8892b0;">
+                    <textarea class="comments-input" name="overall_rating_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+            `;
+        }
+        
+        function generateHRForm() {
+            return `
+                <div class="evaluation-item">
+                    <label>Attendance</label>
+                    <input type="number" class="score-input" name="attendance_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="attendance_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Discipline</label>
+                    <input type="number" class="score-input" name="discipline_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="discipline_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Commitment Towards Work</label>
+                    <input type="number" class="score-input" name="commitment_work_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="commitment_work_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Work Attitude</label>
+                    <input type="number" class="score-input" name="work_attitude_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="work_attitude_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Team Orientation Skills</label>
+                    <input type="number" class="score-input" name="team_orientation_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="team_orientation_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Integrity and Honesty</label>
+                    <input type="number" class="score-input" name="integrity_honesty_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="integrity_honesty_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Communication</label>
+                    <input type="number" class="score-input" name="communication_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="communication_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Productivity</label>
+                    <input type="number" class="score-input" name="productivity_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="productivity_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Initiative</label>
+                    <input type="number" class="score-input" name="initiative_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="initiative_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Punctuality</label>
+                    <input type="number" class="score-input" name="punctuality_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="punctuality_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Physical Disposition</label>
+                    <input type="number" class="score-input" name="physical_disposition_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="physical_disposition_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Overall</label>
+                    <input type="number" class="score-input" name="overall_hr_score" min="1" max="10" readonly style="background: rgba(17, 34, 64, 0.5); color: #8892b0;" required>
+                    <textarea class="comments-input" name="overall_hr_comments" placeholder="Additional comments..." required></textarea>
+                </div>
+            `;
+        }
+        
+        function generateDirectorForm() {
+            return `
+                <div class="evaluation-item">
+                    <label>Knowledge & Skills</label>
+                    <input type="number" class="score-input" name="knowledge_skills_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="knowledge_skills_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Quality of Work</label>
+                    <input type="number" class="score-input" name="quality_work_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="quality_work_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Team Work</label>
+                    <input type="number" class="score-input" name="teamwork_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="teamwork_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Work Consistency</label>
+                    <input type="number" class="score-input" name="work_consistency_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="work_consistency_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Commitment towards work</label>
+                    <input type="number" class="score-input" name="commitment_work_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="commitment_work_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Creativity</label>
+                    <input type="number" class="score-input" name="creativity_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="creativity_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Discipline</label>
+                    <input type="number" class="score-input" name="discipline_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="discipline_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Communication</label>
+                    <input type="number" class="score-input" name="communication_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="communication_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Stability</label>
+                    <input type="number" class="score-input" name="stability_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="stability_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Physical Disposition</label>
+                    <input type="number" class="score-input" name="physical_disposition_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="physical_disposition_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Productivity</label>
+                    <input type="number" class="score-input" name="productivity_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="productivity_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Punctuality</label>
+                    <input type="number" class="score-input" name="punctuality_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="punctuality_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Overall</label>
+                    <input type="number" class="score-input" name="overall_rating_score" min="1" max="10" readonly style="background: rgba(17, 34, 64, 0.5); color: #8892b0;" required>
+                    <textarea class="comments-input" name="overall_rating_comments" placeholder="Additional comments..."></textarea>
+                </div>
+            `;
+        }
+        
+        function generateReadOnlyEvaluation(role, evaluation) {
+            if (role === 'Team Lead') {
+                return generateReadOnlyTeamLeadForm(evaluation);
+            } else if (role === 'HR') {
+                return generateReadOnlyHRForm(evaluation);
+            } else if (role === 'Director') {
+                return generateReadOnlyDirectorForm(evaluation);
+            } else if (role === 'Managing Director') {
+                return generateReadOnlyMDForm(evaluation);
+            }
+            return '';
+        }
+        
+        function generateReadOnlyTeamLeadForm(evaluation) {
+            return `
+                <div class="evaluation-item">
+                    <label>Attendance</label>
+                    <span class="score-display">${evaluation.attendance_score}/10</span>
+                    <div class="comments-display">${evaluation.attendance_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Discipline</label>
+                    <span class="score-display">${evaluation.discipline_score}/10</span>
+                    <div class="comments-display">${evaluation.discipline_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Knowledge & Skills</label>
+                    <span class="score-display">${evaluation.knowledge_skills_score}/10</span>
+                    <div class="comments-display">${evaluation.knowledge_skills_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Quality of Work</label>
+                    <span class="score-display">${evaluation.quality_work_score}/10</span>
+                    <div class="comments-display">${evaluation.quality_work_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Team Work</label>
+                    <span class="score-display">${evaluation.teamwork_score}/10</span>
+                    <div class="comments-display">${evaluation.teamwork_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Work Consistency</label>
+                    <span class="score-display">${evaluation.work_consistency_score}/10</span>
+                    <div class="comments-display">${evaluation.work_consistency_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Thinking Process</label>
+                    <span class="score-display">${evaluation.thinking_process_score}/10</span>
+                    <div class="comments-display">${evaluation.thinking_process_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Communication</label>
+                    <span class="score-display">${evaluation.communication_score}/10</span>
+                    <div class="comments-display">${evaluation.communication_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Initiative</label>
+                    <span class="score-display">${evaluation.initiative_score}/10</span>
+                    <div class="comments-display">${evaluation.initiative_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Motivation</label>
+                    <span class="score-display">${evaluation.motivation_score}/10</span>
+                    <div class="comments-display">${evaluation.motivation_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Creativity</label>
+                    <span class="score-display">${evaluation.creativity_score}/10</span>
+                    <div class="comments-display">${evaluation.creativity_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Honesty</label>
+                    <span class="score-display">${evaluation.honesty_score}/10</span>
+                    <div class="comments-display">${evaluation.honesty_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Overall Rating</label>
+                    <span class="score-display">${evaluation.overall_rating_score}/10</span>
+                    <div class="comments-display">${evaluation.overall_rating_comments || 'No comments'}</div>
+                </div>
+            `;
+        }
+        
+        function generateReadOnlyHRForm(evaluation) {
+            return `
+                <div class="evaluation-item">
+                    <label>Attendance</label>
+                    <span class="score-display">${evaluation.attendance_score}/10</span>
+                    <div class="comments-display">${evaluation.attendance_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Discipline</label>
+                    <span class="score-display">${evaluation.discipline_score}/10</span>
+                    <div class="comments-display">${evaluation.discipline_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Commitment Towards Work</label>
+                    <span class="score-display">${evaluation.commitment_work_score}/10</span>
+                    <div class="comments-display">${evaluation.commitment_work_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Work Attitude</label>
+                    <span class="score-display">${evaluation.work_attitude_score}/10</span>
+                    <div class="comments-display">${evaluation.work_attitude_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Team Orientation Skills</label>
+                    <span class="score-display">${evaluation.team_orientation_score}/10</span>
+                    <div class="comments-display">${evaluation.team_orientation_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Integrity and Honesty</label>
+                    <span class="score-display">${evaluation.integrity_honesty_score}/10</span>
+                    <div class="comments-display">${evaluation.integrity_honesty_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Communication</label>
+                    <span class="score-display">${evaluation.communication_score}/10</span>
+                    <div class="comments-display">${evaluation.communication_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Productivity</label>
+                    <span class="score-display">${evaluation.productivity_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.productivity_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Initiative</label>
+                    <span class="score-display">${evaluation.initiative_score}/10</span>
+                    <div class="comments-display">${evaluation.initiative_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Punctuality</label>
+                    <span class="score-display">${evaluation.punctuality_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.punctuality_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Physical Disposition</label>
+                    <span class="score-display">${evaluation.physical_disposition_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.physical_disposition_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Overall</label>
+                    <span class="score-display">${evaluation.overall_hr_score}/10</span>
+                    <div class="comments-display">${evaluation.overall_hr_comments || 'No comments'}</div>
+                </div>
+            `;
+        }
+        
+        function generateReadOnlyDirectorForm(evaluation) {
+            return `
+                <div class="evaluation-item">
+                    <label>Knowledge & Skills</label>
+                    <span class="score-display">${evaluation.knowledge_skills_score}/10</span>
+                    <div class="comments-display">${evaluation.knowledge_skills_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Quality of Work</label>
+                    <span class="score-display">${evaluation.quality_work_score}/10</span>
+                    <div class="comments-display">${evaluation.quality_work_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Team Work</label>
+                    <span class="score-display">${evaluation.teamwork_score}/10</span>
+                    <div class="comments-display">${evaluation.teamwork_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Work Consistency</label>
+                    <span class="score-display">${evaluation.work_consistency_score}/10</span>
+                    <div class="comments-display">${evaluation.work_consistency_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Commitment towards work</label>
+                    <span class="score-display">${evaluation.commitment_work_score}/10</span>
+                    <div class="comments-display">${evaluation.commitment_work_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Creativity</label>
+                    <span class="score-display">${evaluation.creativity_score}/10</span>
+                    <div class="comments-display">${evaluation.creativity_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Discipline</label>
+                    <span class="score-display">${evaluation.discipline_score}/10</span>
+                    <div class="comments-display">${evaluation.discipline_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Communication</label>
+                    <span class="score-display">${evaluation.communication_score}/10</span>
+                    <div class="comments-display">${evaluation.communication_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Stability</label>
+                    <span class="score-display">${evaluation.stability_score}/10</span>
+                    <div class="comments-display">${evaluation.stability_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Physical Disposition</label>
+                    <span class="score-display">${evaluation.physical_disposition_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.physical_disposition_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Productivity</label>
+                    <span class="score-display">${evaluation.productivity_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.productivity_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Punctuality</label>
+                    <span class="score-display">${evaluation.punctuality_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.punctuality_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Overall</label>
+                    <span class="score-display">${evaluation.overall_rating_score}/10</span>
+                    <div class="comments-display">${evaluation.overall_rating_comments || 'No comments'}</div>
+                </div>
+            `;
+        }
+        
+        function generateReadOnlyMDForm(evaluation) {
+            return `
+                <div class="evaluation-item">
+                    <label>Knowledge & Skills</label>
+                    <span class="score-display">${evaluation.knowledge_skills_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.knowledge_skills_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Quality of Work</label>
+                    <span class="score-display">${evaluation.quality_work_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.quality_work_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Team Work</label>
+                    <span class="score-display">${evaluation.teamwork_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.teamwork_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Work Consistency</label>
+                    <span class="score-display">${evaluation.work_consistency_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.work_consistency_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Commitment towards work</label>
+                    <span class="score-display">${evaluation.commitment_work_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.commitment_work_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Creativity</label>
+                    <span class="score-display">${evaluation.creativity_score}/10</span>
+                    <div class="comments-display">${evaluation.creativity_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Discipline</label>
+                    <span class="score-display">${evaluation.discipline_score}/10</span>
+                    <div class="comments-display">${evaluation.discipline_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Communication</label>
+                    <span class="score-display">${evaluation.communication_score}/10</span>
+                    <div class="comments-display">${evaluation.communication_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Stability</label>
+                    <span class="score-display">${evaluation.stability_score}/10</span>
+                    <div class="comments-display">${evaluation.stability_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Physical Disposition</label>
+                    <span class="score-display">${evaluation.physical_disposition_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.physical_disposition_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Productivity</label>
+                    <span class="score-display">${evaluation.productivity_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.productivity_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Punctuality</label>
+                    <span class="score-display">${evaluation.punctuality_score || 'null'}/10</span>
+                    <div class="comments-display">${evaluation.punctuality_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Overall</label>
+                    <span class="score-display">${evaluation.overall_rating_score}/10</span>
+                    <div class="comments-display">${evaluation.overall_rating_comments || 'No comments'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Further Action</label>
+                    <div class="comments-display">
+                        ${evaluation.further_action_hold ? 'Hold' : ''} 
+                        ${evaluation.further_action_next_round ? 'Next Round' : ''}
+                    </div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Suitable/Not Suitable</label>
+                    <div class="comments-display">
+                        ${evaluation.suitable_yes ? 'Suitable' : ''} 
+                        ${evaluation.suitable_no ? 'Not Suitable' : ''}
+                    </div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Project</label>
+                    <div class="comments-display">${evaluation.project_assignment || 'No project specified'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <label>Area</label>
+                    <div class="comments-display">${evaluation.area_assignment || 'No area specified'}</div>
+                </div>
+            `;
+        }
+
+        function generateMDForm() {
+            return `
+                <div class="evaluation-item">
+                    <label>Knowledge & Skills</label>
+                    <input type="number" class="score-input" name="knowledge_skills_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="knowledge_skills_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Quality of Work</label>
+                    <input type="number" class="score-input" name="quality_work_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="quality_work_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Team Work</label>
+                    <input type="number" class="score-input" name="teamwork_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="teamwork_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Work Consistency</label>
+                    <input type="number" class="score-input" name="work_consistency_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="work_consistency_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Commitment towards work</label>
+                    <input type="number" class="score-input" name="commitment_work_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="commitment_work_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Creativity</label>
+                    <input type="number" class="score-input" name="creativity_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="creativity_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Discipline</label>
+                    <input type="number" class="score-input" name="discipline_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="discipline_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Communication</label>
+                    <input type="number" class="score-input" name="communication_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="communication_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Stability</label>
+                    <input type="number" class="score-input" name="stability_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="stability_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Physical Disposition</label>
+                    <input type="number" class="score-input" name="physical_disposition_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="physical_disposition_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Productivity</label>
+                    <input type="number" class="score-input" name="productivity_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="productivity_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Punctuality</label>
+                    <input type="number" class="score-input" name="punctuality_score" min="1" max="10" required oninput="validateScore(this)">
+                    <textarea class="comments-input" name="punctuality_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                <div class="evaluation-item">
+                    <label>Overall</label>
+                    <input type="number" class="score-input" name="overall_rating_score" min="1" max="10" readonly style="background: rgba(17, 34, 64, 0.5); color: #8892b0;" required>
+                    <textarea class="comments-input" name="overall_rating_comments" placeholder="Additional comments..."></textarea>
+                </div>
+                
+                <div class="form-section" style="margin-top: 30px;">
+                    <h3>For Further Action</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" name="further_action_hold" value="true"> Hold
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" name="further_action_next_round" value="true"> Next Round
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" name="suitable_yes" value="true"> Suitable
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" name="suitable_no" value="true"> Not Suitable
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="project_assignment">Project:</label>
+                        <input type="text" id="project_assignment" name="project_assignment" placeholder="Project assignment">
+                    </div>
+                    <div class="form-group">
+                        <label for="area_assignment">Area:</label>
+                        <select id="area_assignment" name="area_assignment">
+                            <option value="">Select Area</option>
+                            <option value="SSEV">SSEV</option>
+                            <option value="SSEV NATURO FARMS">SSEV NATURO FARMS</option>
+                            <option value="SSEV RENEWABLES">SSEV RENEWABLES</option>
+                            <option value="SSEV SOFTSOLS">SSEV SOFTSOLS</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function submitEvaluation(e, role, pageNumber) {
+            e.preventDefault();
+            
+            // Validate form before submission
+            if (!validateForm()) {
+                return;
+            }
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Convert numeric fields
+            const numericFields = [
+                'attendance_score', 'discipline_score', 'knowledge_skills_score',
+                'quality_work_score', 'teamwork_score', 'work_consistency_score',
+                'thinking_process_score', 'communication_score', 'initiative_score',
+                'motivation_score', 'creativity_score', 'honesty_score', 'overall_rating_score',
+                'commitment_work_score', 'work_attitude_score', 'team_orientation_score',
+                'integrity_honesty_score', 'productivity_score', 'punctuality_score',
+                'physical_disposition_score', 'overall_hr_score', 'stability_score'
+            ];
+            
+            numericFields.forEach(field => {
+                if (data[field]) {
+                    data[field] = parseFloat(data[field]);
+                }
+            });
+            
+            // Handle checkbox fields
+            data.further_action_hold = data.further_action_hold === 'true';
+            data.further_action_next_round = data.further_action_next_round === 'true';
+            data.suitable_yes = data.suitable_yes === 'true';
+            data.suitable_no = data.suitable_no === 'true';
+            
+            data.evaluation_report_id = currentReportId;
+            data.evaluator_role = role;
+            data.page_number = pageNumber;
+            
+            try {
+                const response = await fetch('/api/evaluation/submit_response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showMessage(`${role} evaluation submitted successfully!`, 'success');
+                    closeModal();
+                    loadReports(); // Refresh the reports list
+                } else {
+                    showMessage('Error submitting evaluation: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error submitting evaluation: ' + error.message, 'error');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('evaluationModal').style.display = 'none';
+        }
+
+        function showMessage(message, type) {
+            const container = document.querySelector('.container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            container.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('evaluationModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Load reports when page loads
+        document.addEventListener('DOMContentLoaded', loadReports);
+
+        // Function to validate score input and prevent values greater than 10
+        function validateScore(input) {
+            const value = parseInt(input.value);
+            if (value > 10) {
+                input.value = 10;
+                showMessage('Score cannot be greater than 10. Value has been set to 10.', 'error');
+            } else if (value < 1 && input.value !== '') {
+                input.value = 1;
+                showMessage('Score cannot be less than 1. Value has been set to 1.', 'error');
+            }
+            
+            // Calculate overall rating whenever any score changes
+            calculateOverallRating();
+        }
+
+        // Function to calculate overall rating as average of all individual scores
+        function calculateOverallRating() {
+            // Get all score input fields (excluding the overall rating field itself)
+            const allScoreFields = document.querySelectorAll('input[type="number"].score-input:not([readonly])');
+            
+            let totalScore = 0;
+            let validScores = 0;
+
+            allScoreFields.forEach(field => {
+                if (field.value && !isNaN(parseInt(field.value))) {
+                    totalScore += parseInt(field.value);
+                    validScores++;
+                }
+            });
+
+            // Try different overall rating field names
+            const overallRatingFieldNames = ['overall_rating_score', 'overall_hr_score'];
+            let overallRatingField = null;
+            
+            for (const fieldName of overallRatingFieldNames) {
+                overallRatingField = document.querySelector(`[name="${fieldName}"]`);
+                if (overallRatingField) break;
+            }
+
+            if (overallRatingField && validScores > 0) {
+                const average = totalScore / validScores;
+                // Round to 1 decimal place
+                overallRatingField.value = Math.round(average * 10) / 10;
+            } else if (overallRatingField) {
+                overallRatingField.value = '';
+            }
+        }
+
+        // Function to add event listeners to all score fields for auto-calculation
+        function addScoreFieldListeners() {
+            // Get all score input fields (excluding readonly overall rating fields)
+            const allScoreFields = document.querySelectorAll('input[type="number"].score-input:not([readonly])');
+            
+            allScoreFields.forEach(field => {
+                // Add both input and change event listeners
+                field.addEventListener('input', calculateOverallRating);
+                field.addEventListener('change', calculateOverallRating);
+            });
+        }
+
+        // Function to safely set element value
+        function safeSetValue(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.value = value;
+            }
+        }
+
+        // Function to validate the entire form before submission
+        function validateForm() {
+            // Get all required fields dynamically
+            const allRequiredFields = document.querySelectorAll('input[required], textarea[required], select[required]');
+            
+            let isValid = true;
+            let missingFields = [];
+
+            allRequiredFields.forEach(field => {
+                if (!field.value || field.value.trim() === '') {
+                    isValid = false;
+                    const fieldName = field.name || field.id || 'field';
+                    missingFields.push(fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+                    field.style.borderColor = '#ff6b6b';
+                } else {
+                    field.style.borderColor = '#233554';
+                }
+            });
+
+            if (!isValid) {
+                showMessage(`Please fill in all required fields: ${missingFields.join(', ')}`, 'error');
+            }
+
+            return isValid;
+        }
+
+        // Function to show messages
+        function showMessage(message, type) {
+            // Create a temporary message element
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 5px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                max-width: 400px;
+                word-wrap: break-word;
+            `;
+            
+            if (type === 'error') {
+                messageDiv.style.backgroundColor = '#ff6b6b';
+            } else if (type === 'success') {
+                messageDiv.style.backgroundColor = '#64ffda';
+                messageDiv.style.color = '#0a192f';
+            }
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

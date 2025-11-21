@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to SoftSol's ERP Solutions</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    video#bgVideo {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      min-width: 100%;
+      min-height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .top-buttons {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+
+    .btn {
+      text-decoration: none;
+      background-color: rgba(0, 123, 255, 0.85);
+      color: white;
+      padding: 10px 20px;
+      margin-left: 15px;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: rgba(0, 86, 179, 0.85);
+    }
+
+    .carousel-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 800px;
+      height: 400px;
+      transform: translate(-50%, -50%);
+      overflow: hidden;
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.6);
+    }
+
+    .carousel {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      animation: slide 24s infinite linear;
+    }
+
+    .slide {
+      flex: 0 0 100%;
+      width: 100%;
+      height: 100%;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 20px;
+    }
+
+    @keyframes slide {
+      0%    { transform: translateX(0); }
+      25%   { transform: translateX(-100%); }
+      50%   { transform: translateX(-200%); }
+      75%   { transform: translateX(-300%); }
+      100%  { transform: translateX(-400%); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Video -->
+  <video autoplay muted loop id="bgVideo">
+    <source src="/static/videos/indexbg.mp4" type="video/mp4">
+    Your browser does not support HTML5 video.
+  </video>
+
+  <!-- Top-right Login/Create buttons -->
+  <div class="top-buttons">
+    <a href="/login" class="btn">Login</a>
+    <a href="/register" class="btn">Create Account</a>
+  </div>
+
+  <!-- Center Feature Image Slideshow -->
+  <div class="carousel-container">
+    <div class="carousel" id="carousel">
+      <div class="slide"><img src="/static/images/img1.png" alt="Feature 1"></div>
+      <div class="slide"><img src="/static/images/img2.jpeg" alt="Feature 2"></div>
+      <div class="slide"><img src="/static/images/img3.jpeg" alt="Feature 3"></div>
+      <div class="slide"><img src="/static/images/img4.jpeg" alt="Feature 4"></div>
+      <div class="slide"><img src="/static/images/imge5.png" alt="Feature 5"></div>
+    </div>
+  </div>
+
+</body>
+</html>
